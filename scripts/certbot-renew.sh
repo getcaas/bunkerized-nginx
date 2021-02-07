@@ -1,31 +1,13 @@
 #!/bin/sh
 
-function replace_in_file() {
-	# escape slashes
-	pattern=$(echo "$2" | sed "s/\//\\\\\//g")
-	replace=$(echo "$3" | sed "s/\//\\\\\//g")
-	sed -i "s/$pattern/$replace/g" "$1"
-}
+# load some functions
+. /opt/scripts/utils.sh
 
-# check if HTTP enabled
-# and disable it temporarily if needed
-if grep -q "listen 0.0.0.0:80;" "/etc/nginx/server.conf" ; then
-	replace_in_file "/etc/nginx/server.conf" "listen 0.0.0.0:80;" "#listen 0.0.0.0:80;"
-	if [ -f /run/nginx/nginx.pid ] ; then
-		/usr/sbin/nginx -s reload
-		sleep 10
-	fi
-fi
+# ask new certificates if needed
+certbot renew --deploy-hook /opt/scripts/certbot-renew-hook.sh
 
-# ask a new certificate if needed
-certbot renew
-
-# enable HTTP again if needed
-if grep -q "#listen 0.0.0.0:80;" "/etc/nginx/server.conf" ; then
-	replace_in_file "/etc/nginx/server.conf" "#listen 0.0.0.0:80;" "listen 0.0.0.0:80;"
-fi
-
-# reload nginx
-if [ -f /run/nginx/nginx.pid ] ; then
-	/usr/sbin/nginx -s reload
+if [ "$?" -eq 0 ] ; then
+	job_log "[CERTBOT] renew operation done"
+else
+	job_log "[CERTBOT] renew operation failed"
 fi

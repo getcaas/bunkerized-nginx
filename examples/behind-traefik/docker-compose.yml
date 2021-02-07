@@ -17,28 +17,36 @@ services:
     image: bunkerity/bunkerized-nginx
     restart: always
     volumes:
-      - ./web1:/www
+      - ./web1:/www:ro
     environment:
+      - SERVER_NAME=app1.website.com
       - PROXY_REAL_IP=yes
+      - USE_CLIENT_CACHE=yes
+      - USE_GZIP=yes
+      - USE_BROTLI=yes
       - REMOTE_PHP=myphp1
       - REMOTE_PHP_PATH=/app
     labels:
       - 'traefik.enable=true'
-      - 'traefik.port=80'
+      - 'traefik.port=8080'
       - 'traefik.frontend.rule=Host:app1.website.com' # replace with your domain
 
   mywww2:
     image: bunkerity/bunkerized-nginx
     restart: always
     volumes:
-      - ./web2:/www
+      - ./web2:/www:ro
     environment:
+      - SERVER_NAME=app2.website.com
       - PROXY_REAL_IP=yes
+      - USE_CLIENT_CACHE=yes
+      - USE_GZIP=yes
+      - USE_BROTLI=yes
       - REMOTE_PHP=myphp2
       - REMOTE_PHP_PATH=/app
     labels:
       - 'traefik.enable=true'
-      - 'traefik.port=80'
+      - 'traefik.port=8080'
       - 'traefik.frontend.rule=Host:app2.website.com' # replace with your domain
 
   myphp1:
